@@ -1,0 +1,62 @@
+services:
+  nginx:
+    build:
+      context: nginx-docker
+      args:
+        EMAIL: ${EMAIL}
+    container_name: "nginx"
+    hostname: "nginx"
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+      - 81:81
+    environment:
+      DB_MYSQL_HOST: "mysql"
+      DB_MYSQL_PORT: ${DB_MYSQL_PORT}
+      DB_MYSQL_USER: ${DB_MYSQL_USER}
+      DB_MYSQL_PASSWORD: ${DB_MYSQL_PASSWORD}
+      DB_MYSQL_NAME: ${DB_MYSQL_NAME}
+      DISABLE_IPV6: ${DISABLE_IPV6}
+    volumes:
+      - ./nginx-data:/data
+      - ./nginx-letsencrypt:/etc/letsencrypt
+    depends_on:
+      - mysql
+  mysql:
+    image: "jc21/mariadb-aria:latest"
+    container_name: "mysql"
+    hostname: "mysql"
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_MYSQL_NAME}
+      MYSQL_USER: ${DB_MYSQL_USER}
+      MYSQL_PASSWORD: ${DB_MYSQL_PASSWORD}
+      MARIADB_AUTO_UPGRADE: ${MARIADB_AUTO_UPGRADE}
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+  fail2ban:
+    image: "crazymax/fail2ban:latest"
+    container_name: "fail2ban"
+    hostname: "fail2ban"
+    restart: unless-stopped
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      TZ: ${TZ}
+      F2B_LOG_TARGET: ${F2B_LOG_TARGET}
+      F2B_LOG_LEVEL: ${F2B_LOG_LEVEL}
+      F2B_DB_PURGE_AGE: ${F2B_DB_PURGE_AGE}
+      SSMTP_HOST: ${SSMTP_HOST}
+      SSMTP_PORT: ${SSMTP_PORT}
+      SSMTP_HOSTNAME: ${SSMTP_HOSTNAME}
+      SSMTP_USER: ${EMAIL}
+      SSMTP_PASSWORD: ${SSMTP_PASSWORD}
+      SSMTP_TLS: ${SSMTP_TLS}
+      SSMTP_STARTTLS: ${SSMTP_STARTTLS}
+    volumes:
+      - ./fail2ban-data:/data
+      - ./nginx-data/logs:/var/log:ro
