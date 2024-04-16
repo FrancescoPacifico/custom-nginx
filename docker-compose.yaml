@@ -76,3 +76,11 @@ services:
     privileged: true
     devices:
       - /dev/kmsg:/dev/kmsg
+  wetty:
+    image: "wettyoss/wetty:latest"
+    container_name: "wetty"
+    hostname: "wetty"
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    command: --ssh-host=${SSH_HOST}
