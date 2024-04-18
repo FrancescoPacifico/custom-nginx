@@ -71,7 +71,8 @@ services:
       - mysql
 
   fail2ban:
-    image: "crazymax/fail2ban:latest"
+    build:
+      context: docker/fail2ban
     container_name: "fail2ban"
     hostname: "fail2ban"
     restart: unless-stopped
@@ -81,7 +82,7 @@ services:
       - NET_RAW
     environment:
       TZ: ${TZ}
-      F2B_LOG_TARGET: "/data/fail2ban.log"
+      F2B_LOG_TARGET: "/var/log/fail2ban/fail2ban.log"
       F2B_LOG_LEVEL: ${F2B_LOG_LEVEL}
       F2B_DB_PURGE_AGE: ${F2B_DB_PURGE_AGE}
       SSMTP_HOST: ${SSMTP_HOST}
@@ -92,7 +93,7 @@ services:
       SSMTP_TLS: ${SSMTP_TLS}
       SSMTP_STARTTLS: ${SSMTP_STARTTLS}
     volumes:
-      - ./data/fail2ban:/data
+      - ./data/fail2ban:/var/log/fail2ban
       - ./data/nginx/logs:/var/log/nginx:ro
     depends_on:
       - nginx
@@ -122,6 +123,6 @@ services:
       LOGIO_FILE_INPUT_CONFIG_PATH: "/file-input.json"
     volumes:
       - ./data/nginx/logs:/var/log/nginx:ro
-      - ./data/fail2ban/fail2ban.log:/var/log/fail2ban.log:ro
+      - ./data/fail2ban:/var/log/fail2ban:ro
     depends_on:
       - log.io-server

@@ -2,18 +2,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-data/*
-!data/fail2ban/
-data/fail2ban/*
-!data/fail2ban/filter.d/
-!data/fail2ban/jail.d/
-data/fail2ban/filter.d/*
-data/fail2ban/jail.d/*
-!data/fail2ban/filter.d/nginx-bad-request.conf
-!data/fail2ban/jail.d/nginx.conf
-mysql-data/
-nginx-data/
-nginx-letsencrypt/
+data/
 .env
 
 ### IntelliJ IDEA ###
