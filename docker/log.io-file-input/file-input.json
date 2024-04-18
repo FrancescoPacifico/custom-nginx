@@ -1,0 +1,36 @@
+{
+  "messageServer": {
+    "host": "log.io-server",
+    "port": 6689
+  },
+  "inputs": [
+    {
+      "source": "nginx",
+      "stream": "default-host",
+      "config": {
+        "path": "/var/log/nginx/proxy-host-*_access.log"
+      }
+    },
+    {
+      "source": "nginx",
+      "stream": "proxy-hosts",
+      "config": {
+        "path": "/var/log/nginx/proxy-host-*_access.log"
+      }
+    },
+    {
+      "source": "nginx",
+      "stream": "dead-hosts",
+      "config": {
+        "path": "/var/log/nginx/dead-host-*_access.log"
+      }
+    },
+    {
+      "source": "fail2ban",
+      "stream": "info",
+      "config": {
+        "path": "/var/log/fail2ban/fail2ban.log"
+      }
+    }
+  ]
+}

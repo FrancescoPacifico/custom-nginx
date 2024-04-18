@@ -1,7 +1,52 @@
 services:
+  cadvisor:
+    image: "gcr.io/cadvisor/cadvisor-arm64:v0.49.1"
+    container_name: "cadvisor"
+    hostname: "cadvisor"
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    ports:
+      - 8082:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+
+  mysql:
+    image: "jc21/mariadb-aria:latest"
+    container_name: "mysql"
+    hostname: "mysql"
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_MYSQL_NAME}
+      MYSQL_USER: ${DB_MYSQL_USER}
+      MYSQL_PASSWORD: ${DB_MYSQL_PASSWORD}
+      MARIADB_AUTO_UPGRADE: ${MARIADB_AUTO_UPGRADE}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+
+  wetty:
+    image: "wettyoss/wetty:latest"
+    container_name: "wetty"
+    hostname: "wetty"
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    ports:
+      - 8083:3000
+    command: --ssh-host=${SSH_HOST}
+
   nginx:
     build:
-      context: nginx-docker
+      context: docker/nginx
       args:
         EMAIL: ${EMAIL}
     container_name: "nginx"
@@ -10,8 +55,9 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 81:81
+      - 8081:81
     environment:
+      TZ: ${TZ}
       DB_MYSQL_HOST: "mysql"
       DB_MYSQL_PORT: ${DB_MYSQL_PORT}
       DB_MYSQL_USER: ${DB_MYSQL_USER}
@@ -19,23 +65,11 @@ services:
       DB_MYSQL_NAME: ${DB_MYSQL_NAME}
       DISABLE_IPV6: ${DISABLE_IPV6}
     volumes:
-      - ./nginx-data:/data
-      - ./nginx-letsencrypt:/etc/letsencrypt
+      - ./data/nginx:/data
+      - ./data/nginx/letsencrypt:/etc/letsencrypt
     depends_on:
       - mysql
-  mysql:
-    image: "jc21/mariadb-aria:latest"
-    container_name: "mysql"
-    hostname: "mysql"
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_MYSQL_NAME}
-      MYSQL_USER: ${DB_MYSQL_USER}
-      MYSQL_PASSWORD: ${DB_MYSQL_PASSWORD}
-      MARIADB_AUTO_UPGRADE: ${MARIADB_AUTO_UPGRADE}
-    volumes:
-      - ./mysql-data:/var/lib/mysql
+
   fail2ban:
     image: "crazymax/fail2ban:latest"
     container_name: "fail2ban"
@@ -47,7 +81,7 @@ services:
       - NET_RAW
     environment:
       TZ: ${TZ}
-      F2B_LOG_TARGET: ${F2B_LOG_TARGET}
+      F2B_LOG_TARGET: "/data/fail2ban.log"
       F2B_LOG_LEVEL: ${F2B_LOG_LEVEL}
       F2B_DB_PURGE_AGE: ${F2B_DB_PURGE_AGE}
       SSMTP_HOST: ${SSMTP_HOST}
@@ -58,29 +92,36 @@ services:
       SSMTP_TLS: ${SSMTP_TLS}
       SSMTP_STARTTLS: ${SSMTP_STARTTLS}
     volumes:
-      - ./fail2ban-data:/data
-      - ./nginx-data/logs:/var/log:ro
-  cadvisor:
-    image: "gcr.io/cadvisor/cadvisor-arm64:v0.49.1"
-    container_name: "cadvisor"
-    hostname: "cadvisor"
+      - ./data/fail2ban:/data
+      - ./data/nginx/logs:/var/log/nginx:ro
+    depends_on:
+      - nginx
+
+  log.io-server:
+    build:
+      context: docker/log.io-server
+    container_name: "log.io-server"
+    hostname: "log.io-server"
     restart: unless-stopped
     ports:
-      - 8081:8080
+      - 8084:6688
+    environment:
+      TZ: ${TZ}
+      LOGIO_SERVER_CONFIG_PATH: "/server.json"
+    depends_on:
+      - fail2ban
+
+  log.io-file-input:
+    build:
+      context: docker/log.io-file-input
+    container_name: "log.io-file-input"
+    hostname: "log.io-file-input"
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      LOGIO_FILE_INPUT_CONFIG_PATH: "/file-input.json"
     volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    privileged: true
-    devices:
-      - /dev/kmsg:/dev/kmsg
-  wetty:
-    image: "wettyoss/wetty:latest"
-    container_name: "wetty"
-    hostname: "wetty"
-    restart: unless-stopped
-    ports:
-      - 3000:3000
-    command: --ssh-host=${SSH_HOST}
+      - ./data/nginx/logs:/var/log/nginx:ro
+      - ./data/fail2ban/fail2ban.log:/var/log/fail2ban.log:ro
+    depends_on:
+      - log.io-server
