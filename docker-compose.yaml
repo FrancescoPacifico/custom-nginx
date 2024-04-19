@@ -4,10 +4,10 @@ services:
     container_name: "cadvisor"
     hostname: "cadvisor"
     restart: unless-stopped
+    ports:
+      - 8081:8080
     environment:
       TZ: ${TZ}
-    ports:
-      - 8082:8080
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -38,10 +38,10 @@ services:
     container_name: "wetty"
     hostname: "wetty"
     restart: unless-stopped
+    ports:
+      - 8082:3000
     environment:
       TZ: ${TZ}
-    ports:
-      - 8083:3000
     command: --ssh-host=${SSH_HOST}
 
   nginx:
@@ -55,7 +55,7 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 8081:81
+      - 8083:81
     environment:
       TZ: ${TZ}
       DB_MYSQL_HOST: "mysql"
