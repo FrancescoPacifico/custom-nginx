@@ -4,7 +4,7 @@ FROM node:latest
 RUN npm install -g log.io-file-input
 
 # Copy the custom configuration file.
-COPY file-input.json /file.json
+COPY file-input.json /file-input.json
 
 # Run log.io file input.
 CMD ["log.io-file-input"]
