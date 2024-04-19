@@ -26,9 +26,9 @@ services:
     environment:
       TZ: ${TZ}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_MYSQL_NAME}
-      MYSQL_USER: ${DB_MYSQL_USER}
-      MYSQL_PASSWORD: ${DB_MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MARIADB_AUTO_UPGRADE: ${MARIADB_AUTO_UPGRADE}
     volumes:
       - ./data/mysql:/var/lib/mysql
@@ -60,9 +60,9 @@ services:
       TZ: ${TZ}
       DB_MYSQL_HOST: "mysql"
       DB_MYSQL_PORT: ${DB_MYSQL_PORT}
-      DB_MYSQL_USER: ${DB_MYSQL_USER}
-      DB_MYSQL_PASSWORD: ${DB_MYSQL_PASSWORD}
-      DB_MYSQL_NAME: ${DB_MYSQL_NAME}
+      DB_MYSQL_USER: ${MYSQL_USER}
+      DB_MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      DB_MYSQL_NAME: ${MYSQL_DATABASE}
       DISABLE_IPV6: ${DISABLE_IPV6}
     volumes:
       - ./data/nginx:/data
