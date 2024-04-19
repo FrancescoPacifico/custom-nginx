@@ -18,10 +18,10 @@ services:
     devices:
       - /dev/kmsg:/dev/kmsg
 
-  mysql:
+  mariadb:
     image: "jc21/mariadb-aria:latest"
-    container_name: "mysql"
-    hostname: "mysql"
+    container_name: "mariadb"
+    hostname: "mariadb"
     restart: unless-stopped
     environment:
       TZ: ${TZ}
@@ -31,7 +31,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MARIADB_AUTO_UPGRADE: ${MARIADB_AUTO_UPGRADE}
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - ./data/mariadb:/var/lib/mysql
 
   wetty:
     image: "wettyoss/wetty:latest"
@@ -58,7 +58,7 @@ services:
       - 8083:81
     environment:
       TZ: ${TZ}
-      DB_MYSQL_HOST: "mysql"
+      DB_MYSQL_HOST: "mariadb"
       DB_MYSQL_PORT: ${DB_MYSQL_PORT}
       DB_MYSQL_USER: ${MYSQL_USER}
       DB_MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -68,7 +68,7 @@ services:
       - ./data/nginx:/data
       - ./data/nginx/letsencrypt:/etc/letsencrypt
     depends_on:
-      - mysql
+      - mariadb
 
   fail2ban:
     build:
