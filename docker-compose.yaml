@@ -109,11 +109,6 @@ services:
     environment:
       TZ: ${TZ}
       LOGIO_SERVER_CONFIG_PATH: "/server.json"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:6688"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     depends_on:
       - fail2ban
 
@@ -130,5 +125,4 @@ services:
       - ./data/nginx/logs:/var/log/nginx:ro
       - ./data/fail2ban:/var/log/fail2ban:ro
     depends_on:
-      log.io-server:
-        condition: service_healthy
+      - log.io-server
